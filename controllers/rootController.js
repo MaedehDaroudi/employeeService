@@ -1,27 +1,34 @@
-const redis = require('redis');
-exports.dataService =async (req, res) => {
-  // const redis = require('redis');
-  const redisclient = redis.createClient();
+const boom = require('boom');
+const redisclient = require('../utils/redisConnection');
 
-  (async () => {
-    port = '127.0.0.1';
-    host = 6379;
-    await redisclient.connect(port, host);
-  })();
-
-  console.log('Connecting to the Redis');
-
-  redisclient.on('ready', () => {
-    console.log('Connected!');
-  });
-  redisclient.set('name', 'Flavio');
-  const value =await redisclient.get('name');
-  console.log('value: ', value);
-
-  redisclient.on('error', (err) => {
-    console.log('Error in the Connection');
-  });
-  // console.log('req.body =>', req.body);
-
-  res.end('Hello');
+exports.dataService = async (req, res) => {
+  let userData = await redisclient.get('userData');
+  userData = JSON.parse(userData);
+  if (userData !== null) {
+    const checkId = await userData.find((data) => data.id === +req.body.id);
+    if (checkId) {
+      res.status(500).json({
+        status: 'fail',
+        message: 'شناسه ی دادهها تکراری است.',
+      });
+    } else {
+      const checkParent = await userData.find(
+        (data) => data.id === +req.body.parent
+      );
+      if (checkParent) {      
+        userData.push(req.body);        
+        redisclient.set('userData', JSON.stringify(userData));
+        res.status(200).json({
+          status: 'success',
+          message: 'داده ها ذخیره شد.',
+        });
+      } else {
+        res.status(500).json({
+          status: 'fail',
+          message: 'امکان ثبت اطلاعات برای شما وجود ندارد.',
+        });
+      }
+    }
+  } else userData = [];
+  // res.end('Hello');
 };
