@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require("express");
 
-const ctrl = require('../controllers/rootController');
+const ctrl = require("../controllers/rootController");
 const router = express.Router();
 
-router.route('/dataService').post(ctrl.dataService);
-// Router.route("/").get(ctrl.)
+router.route("/dataService").post(ctrl.dataService);
+router.route("/").get(ctrl.getData);
 // Router.route("/").get(ctrl.)
 // Router.route("/").get(ctrl.)
 
